@@ -215,7 +215,7 @@ footer .bye{font-family:var(--f-hand);font-size:28px;letter-spacing:.2em;color:v
 
   <div class="nums" id="nums">
     <div class="num"><b data-to="36">36</b><span>Instagramの投稿</span></div>
-    <div class="num"><b data-to="22000">22,000</b><span>ハミガキした回数</span></div>
+    <div class="num"><b id="hamigaki" data-to="22000">22,000</b><span>ハミガキした回数</span></div>
     <div class="num"><b>1個分</b><span>東京ドームの大きさ</span></div>
     <div class="num"><b>∞</b><span>カレーがたべたい気持ち</span></div>
   </div>
@@ -366,6 +366,19 @@ footer .bye{font-family:var(--f-hand);font-size:28px;letter-spacing:.2em;color:v
 
   // count up once the numbers come into view
   const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // HAMIGAKI counter: 22,000 at the "HAMIGAKI 22000回記念" post (2026-01-11 10:24 JST),
+  // then +1 every morning at 8:00 and +1 every night at 22:00, Japan time.
+  (function(){
+    const el=document.getElementById('hamigaki');if(!el)return;
+    const H=3600e3, DAY=24*H;
+    const day0=Date.UTC(2026,0,11)-9*H;          // 2026-01-11 00:00 JST
+    const post=day0+10*H+24*60e3;                // posted 10:24 JST
+    const now=Date.now();
+    // count brushing times (day0 + d*DAY + offset) that fall after the post and up to now
+    const slots=off=>{const first=Math.ceil((post-day0-off)/DAY), last=Math.floor((now-day0-off)/DAY);return Math.max(0,last-first+1);};
+    const n=22000+slots(8*H)+slots(22*H);
+    el.dataset.to=String(n);el.textContent=n.toLocaleString('en-US');
+  })();
   const nums=[...document.querySelectorAll('.num b[data-to]')];
   if(!reduce&&'IntersectionObserver' in window){
     const io=new IntersectionObserver(es=>{es.forEach(e=>{if(!e.isIntersecting)return;io.unobserve(e.target);
